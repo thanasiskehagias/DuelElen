@@ -1,23 +1,11 @@
 
-clear;
-clc;
-
-% Αρχικοποίηση παραμέτρων
-a = 10; % Απόλαβη αν ο παίκτης σκοτώσει τον άλλο
-b = 1; % Απόλαβη αν σκοτωθεί ο παίκτης
-p_1 = 0.35; % Πιθανότητα ευστοχίας παίκτη 1
-p_2 = 0.8; % Πιθανότητα ευστοχίας παίκτη 2
-x1 = 0.6; % Πιθανότητα πυροβολισμού παίκτη 1
-x2 = 0.25; % Πιθανότητα πυροβολισμού παίκτη 2
-T = 100; % Αριθμός γύρων
-J = 10000; % Αριθμός γενεών
-
 % Υπολογισμός των απολαβών για J γενεές
 total_payoff_p1 = 0;
 total_payoff_p2 = 0;
 
 for generation = 1:J
     [payoff_p1, payoff_p2, state_p1, state_p2] = Duel(1, 2, x1, x2, [0 p_1; p_2 0], T, @SelectStrategy, @Strat, [1 1], a, b, p_1, p_2);
+	STATE(generation,:)=[state_p1, state_p2];
     
     total_payoff_p1 = total_payoff_p1 + payoff_p1;
     total_payoff_p2 = total_payoff_p2 + payoff_p2;
@@ -27,12 +15,12 @@ for generation = 1:J
     %fprintf('  State of Player 2: %d, Payoff: %.2f\n', state_p2, payoff_p2);
 end
 
-avg_payoff_p1 = total_payoff_p1 / J;
-avg_payoff_p2 = total_payoff_p2 / J;
+avg_payoff_p1=total_payoff_p1 / J;
+avg_payoff_p2=total_payoff_p2 / J;
+[thc_payoff_p1,thc_payoff_p2]=payoffs1(p_1,p_2,a,b,x1,x2);
 
-fprintf('\nAverage Payoff after %d Generations:\n', J);
-fprintf('  Average Payoff for Player 1: %.3f\n', avg_payoff_p1);
-fprintf('  Average Payoff for Player 2: %.3f\n', avg_payoff_p2);
+disp([thc_payoff_p1,thc_payoff_p2])
+disp([avg_payoff_p1,avg_payoff_p2])
 
 % Συνάρτηση Duel
 function [payoff_p1, payoff_p2, state_p1, state_p2] = Duel(p1, p2, x1, x2, PP, T, SelectStrategy, Strat, str_vector, a, b, p_1, p_2)
@@ -80,7 +68,7 @@ function [payoff_p1, payoff_p2, state_p1, state_p2] = Duel(p1, p2, x1, x2, PP, T
     elseif killFlag(1) == 1 && killFlag(2) == 1
         payoff_p1 = a - b; % Both players killed each other
     else
-        payoff_p1 = (x1 * p_1 * x2 * p_2 * (a - b) + x1 * p_1 * ((1-x2) + x2 * (1 - p_2)) * a + ((1-x1) + x1 * (1 - p_1)) * x2 * p_2 * (-b)) / (1 - (x1 * (1 - p_1) * x2 * (1 - p_2) + (1 - x1) * x2 * (1 - p_2) + x1 * (1 - p_1) * (1 - x2) + (1 - x1) * (1 - x2)));
+        payoff_p1 = 0;
     end
 
     if killFlag(2) == 1 && killFlag(1) == 0
@@ -90,7 +78,7 @@ function [payoff_p1, payoff_p2, state_p1, state_p2] = Duel(p1, p2, x1, x2, PP, T
     elseif killFlag(1) == 1 && killFlag(2) == 1
         payoff_p2 = a - b; % Both players killed each other
     else
-        payoff_p2 = (x1 * p_1 * x2 * p_2 * (a - b) + x1 * p_1 * ((1-x2) + x2 * (1 - p_2)) * (-b) + ((1-x1) + x1 * (1 - p_1)) * x2 * p_2 * (a)) / (1 - (x1 * (1 - p_1) * x2 * (1 - p_2) + (1 - x1) * x2 * (1 - p_2) + x1 * (1 - p_1) * (1 - x2) + (1 - x1) * (1 - x2)));
+        payoff_p2 = 0;
     end
 end
 
