@@ -1,0 +1,606 @@
+%2multibyte Version: 5.50.0.2953 CodePage: 65001
+% Required for inserting images
+
+\documentclass{article}%
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{alphabeta}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{boxedminipage}
+\usepackage[open,openlevel=1]{bookmark}
+\usepackage{caption}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{multirow}
+\usepackage{tikz}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.50.0.2953}
+%TCIDATA{Codepage=65001}
+%TCIDATA{LastRevised=Thursday, November 14, 2024 11:39:07}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{BibliographyScheme=Manual}
+%BeginMSIPreambleData
+\providecommand{\U}[1]{\protect\rule{.1in}{.1in}}
+%EndMSIPreambleData
+\providecommand{\U}[1]{\protect \rule{.1in}{.1in}}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{ALGORITHM}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent \textbf{#1.} }{\  \rule{0.5em}{0.5em}}
+\setcounter{tocdepth}{6}
+\setlength{\textwidth}{6.75in}
+\setlength{\textheight}{9.00in}
+\setlength{\oddsidemargin}{-.125 in}
+\setlength{\evensidemargin}{-.125 in}
+\setlength{\topmargin}{-.60 in}
+\begin{document}
+
+\title{An Evolutionary Duel Tournament}
+\author{Ath. Kehagias }
+\date{}
+\maketitle
+
+\section{Intro}
+
+We study an evolutionary duel tournament which consists of the following components
+
+\begin{enumerate}
+\item The \emph{basic duel game} or \emph{match}, which is played between two
+players. We study two variants:\ the \emph{discounted} and \emph{undiscounted} ones.
+
+\item The \emph{meeting}, which consists of all possible matches between $N$ players.
+
+\item The evolutionary \emph{tournament}, which consists of one meeting per
+\emph{generation} of players. The outcomes of each meeting are used to update
+the strategies used by the players in the meeting of next generation.
+\end{enumerate}
+
+Our main goal is the following:\ there exist $M$ strategies and each of $N$
+players will use one of these strategies. The representation of strategies in
+the next generation depends on their performance in the current generation.
+More precisely, the performance of a strategy is proprtional to the total
+payoff accumulated by all the players who have used this strategy. It is hoped
+that, as time progresses, better performing strategies will be more heavily
+represented and will eventually \textquotedblleft
+exterminate\textquotedblright\ strategies with worse performance.
+
+\section{The Discounted Basic Game}
+
+\subsection{Rules of the Game\noindent}
+
+The discounted base game is played between players $P_{1}$ and $P_{2}$; player
+$P_{n}$ has \emph{kill probability }$p_{n}$. In each round the two players
+shoot simultaneously, with $P_{n}$'s shooting probability $x_{n}$ being
+determined by the \emph{strategy} he has adopted (a player can also choose to
+\emph{abstain}, i.e., to not shoot). The game state is $\mathbf{s}=s_{1}s_{2}%
+$, where $s_{n}=0$ (resp. $s_{n}=1$) means $P_{n}$ is dead (resp. alive). The
+state set is
+\[
+S=\left\{  00,01,10,11\right\}
+\]
+and each state $\mathbf{s}$ yields \emph{round payoff} $q_{n}\left(
+\mathbf{s}\right)  $ to $P_{n}$. We have
+\begin{align*}
+q_{1}\left(  00\right)   &  =0,\quad q_{1}\left(  01\right)  =0,\quad
+q_{1}\left(  10\right)  =1,\quad q_{1}\left(  11\right)  =1,\\
+q_{2}\left(  00\right)   &  =0,\quad q_{2}\left(  01\right)  =1,\quad
+q_{2}\left(  10\right)  =0,\quad q_{1}\left(  11\right)  =1.
+\end{align*}
+The idea is that each player receives one payoff unit for each turn in which
+he is alive. The \emph{total payoff} is%
+\[
+Q_{n}\left(  \mathbf{s}\left(  0\right)  \mathbf{s}\left(  1\right)
+\mathbf{s}\left(  2\right)  ...\right)  =\sum_{t=0}^{\infty}\gamma^{t}%
+q_{n}\left(  \mathbf{s}\left(  t\right)  \right)
+\]
+(i.e., it round payoff is discounted by a factor $\gamma\in\left(  0,1\right)
+$). The \emph{expected total payoff} is%
+\[
+\overline{Q}_{n}=\mathbb{E}\left(  Q_{n}\left(  \mathbf{s}\left(  0\right)
+\mathbf{s}\left(  1\right)  \mathbf{s}\left(  2\right)  ...\right)  \right)
+\]
+where the expectation is taken with respect to the probability determined by
+the players' strategies.
+
+\subsection{Payoff Equation under Stationary Strategies}
+
+Suppose that $P_{n}$ uses a stationary strategy $\sigma\left(  \mathbf{s}%
+\right)  =\left(  x_{n1},x_{n2}\right)  $, where
+\[
+x_{nm}=\Pr\left(  P_{n}\text{ shoots at }P_{m}\right)
+\]
+with \textquotedblleft$P_{n}$ shoots at $P_{n}$\textquotedblright\ being
+understood as \textquotedblleft$P_{n}$ abstains\textquotedblright. Since we
+must have $x_{n1}+x_{n2}=1$, we can parametrize $P_{n}$'s stationary strategy
+by a single number $x_{n}$, the probability of shooting at the other player.
+We define%
+\[
+V_{\mathbf{s}}^{n}\left(  x_{1},x_{2}\right)  =\text{\textquotedblleft}%
+P_{n}\text{'s expected payoff when starting at state }\mathbf{s}\text{ and
+shoooting probs are }x_{1},x_{2}\text{\textquotedblright.}%
+\]
+We have $\sum_{t=0}^{\infty}\gamma^{t}=\allowbreak-\frac{1}{\gamma-1}$
+\[
+V_{00}^{1}=0,\quad V_{01}^{1}=0,\quad V_{10}^{1}=\sum_{t=0}^{\infty}\gamma
+^{t}\cdot1=\frac{1}{1-\gamma}.
+\]
+For $V_{11}^{1}$ we have the following equation%
+
+\begin{align*}
+V_{11}^{1}  &  =x_{1}p_{1}x_{2}p_{2}V_{00}^{1}+\left(  x_{1}\left(
+1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)  x_{2}p_{2}V_{01}^{1}%
++x_{1}p_{1}\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)
+\right)  V_{10}^{1}\\
+&  +\left(  x_{1}\left(  1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)
+\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)  \right)  \left(
+1+\gamma V_{11}^{1}\right)
+\end{align*}
+which becomes%
+
+\[
+V_{11}^{1}=x_{1}p_{1}\left(  x_{2}\left(  1-p_{2}\right)  +\left(
+1-x_{2}\right)  \right)  \frac{1}{1-\gamma}+\left(  x_{1}\left(
+1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)  \left(  x_{2}\left(
+1-p_{2}\right)  +\left(  1-x_{2}\right)  \right)  \left(  1+\gamma V_{11}%
+^{1}\right)
+\]
+Solving, when $\max\left(  x_{1},x_{2}\right)  >0$ we get%
+\[
+V_{11}^{1}\left(  x_{1},x_{2}\right)  =\frac{\left(  1-x_{2}p_{2}\right)
+\left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \right)  }{\left(  1-\gamma
+\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \left(  1-x_{2}%
+p_{2}\right)  \right)  }%
+\]
+and when $\max\left(  x_{1},x_{2}\right)  =0$
+\[
+V_{11}^{1}\left(  x_{1},x_{2}\right)  =\frac{1}{1-\gamma}.
+\]
+Repeating the process for $V_{11}^{2}$ we get
+\begin{align*}
+V_{00}^{2}  &  =0,\quad V_{01}^{2}=0,\quad V_{10}^{2}=\frac{1}{1-\gamma}\\
+V_{11}^{2}\left(  x_{1},x_{2}\right)   &  =\frac{\left(  1-x_{1}p_{1}\right)
+\left(  1-\gamma\left(  1-x_{2}p_{2}\right)  \right)  }{\left(  1-\gamma
+\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \left(  1-x_{2}%
+p_{2}\right)  \right)  }%
+\end{align*}
+
+
+\subsection{Stationary Equilibria}
+
+We will now show that the game has two Nash equilibria in stationary strategies.
+
+\begin{enumerate}
+\item When $\max\left(  x_{1},x_{2}\right)  >1$:%
+\begin{align*}
+\frac{dV_{11}^{1}}{dx_{1}}  &  =D_{x_{1}}\left(  \frac{\left(  1-x_{2}%
+p_{2}\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \right)  }{\left(
+1-\gamma\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \left(
+1-x_{2}p_{2}\right)  \right)  }\right)  =\allowbreak\frac{\left(  1-x_{2}%
+p_{2}\right)  \gamma p_{1}p_{2}x_{2}}{\left(  1-\gamma\right)  \left(
+1-\gamma\left(  1-x_{2}p_{2}\right)  \left(  1-x_{1}p_{1}\right)  \right)
+^{2}}\allowbreak>0\\
+\frac{dV_{11}^{2}}{dx_{2}}  &  =D_{x_{2}}\left(  \frac{\left(  1-x_{1}%
+p_{1}\right)  \left(  1-\gamma\left(  1-x_{2}p_{2}\right)  \right)  }{\left(
+1-\gamma\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \left(
+1-x_{2}p_{2}\right)  \right)  }\right)  =\allowbreak\frac{\left(  1-x_{1}%
+p_{1}\right)  \gamma p_{1}p_{2}x_{1}}{\left(  1-\gamma\right)  \left(
+1-\gamma\left(  1-x_{2}p_{2}\right)  \left(  1-x_{1}p_{1}\right)  \right)
+^{2}}\allowbreak>0
+\end{align*}
+Hence, whenever $x_{-n}>0$, $P_{n}$ has motive to increase $x_{n}$ as much as
+possible. Consequently $\left(  \widehat{x}_{1},\widehat{x}_{2}\right)
+=\left(  1,1\right)  $ is a NE.
+
+\item When $\left(  \widehat{x}_{1},\widehat{x}_{2}\right)  =\left(
+0,0\right)  $, we have $\frac{\left(  1-\gamma\right)  }{\left(
+1-\gamma\right)  \left(  1-\gamma\right)  }-\frac{\left(  1-\gamma\left(
+1-x_{1}p_{1}\right)  \right)  }{\left(  1-\gamma\right)  \left(
+1-\gamma\left(  1-x_{1}p_{1}\right)  \right)  }$%
+\begin{align*}
+V_{11}^{1}\left(  0,0\right)  -V_{11}^{1}\left(  x_{1},0\right)   &
+=\frac{\left(  1-\gamma\right)  }{\left(  1-\gamma\right)  \left(
+1-\gamma\right)  }-\frac{\left(  1-\gamma\left(  1-x_{1}p_{1}\right)  \right)
+}{\left(  1-\gamma\right)  \left(  1-\gamma\left(  1-x_{1}p_{1}\right)
+\right)  }=0\\
+V_{11}^{2}\left(  0,0\right)  -V_{11}^{2}\left(  0,x_{2}\right)   &  =0
+\end{align*}
+Hence, whenever $P_{n}$ has no motive to move away from $x_{n}=0$.
+Consequently $\left(  \widehat{x}_{1},\widehat{x}_{2}\right)  =\left(
+0,0\right)  $ is a NE.
+\end{enumerate}
+
+\subsection{Nonstationary Equilibria}
+
+Let $\sigma_{G}$ be the no-shoot strategy with grim retaliation. We will show
+that $\left(  \sigma_{G},\sigma_{G}\right)  $ is a NE. Suppose both players
+are using $\sigma_{G}$; then $P_{1}$ gets the payoff
+\[
+\widehat{V}_{11}^{1}=V_{11}^{1}\left(  0,0\right)  =\frac{1}{1-\gamma}.
+\]
+Now $P_{1}$ considers deviating. If he shoots once at some round, then $P_{2}$
+will keep shooting back in all subsequent rounds and then $P_{1}$'s best
+strategy is to also keep shooting. He only needs to consider the deviating
+strategy in which he shoots at the first round, with probability one. This
+deviation yields:
+\begin{align*}
+\widetilde{V}_{11}^{1}  &  =p_{1}V_{11}^{1}\left(  1,0\right)  +\left(
+1-p_{1}\right)  V_{11}^{1}\left(  1,1\right) \\
+&  =\frac{1-\gamma\left(  1-p_{1}\right)  \left(  1-p_{2}\right)
+-p_{2}\left(  1-p_{1}\right)  }{\left(  1-\gamma\right)  \left(
+1-\gamma\left(  1-p_{1}\right)  \left(  1-p_{2}\right)  \right)  }%
+\end{align*}
+Then we have%
+\begin{align*}
+\widehat{V}_{11}^{1}-\widetilde{V}_{11}^{1}  &  =\frac{1}{1-\gamma}%
+-\frac{1-\gamma\left(  1-p_{1}\right)  \left(  1-p_{2}\right)  -p_{2}\left(
+1-p_{1}\right)  }{\left(  1-\gamma\right)  \left(  1-\gamma\left(
+1-p_{1}\right)  \left(  1-p_{2}\right)  \right)  }\\
+&  =\allowbreak\frac{p_{2}\left(  1-p_{1}\right)  }{\left(  1-\gamma\right)
+\left(  1-\gamma\left(  1-p_{1}\right)  \left(  1-p_{2}\right)  \right)  }>0
+\end{align*}
+Hence $\left(  \sigma_{G},\sigma_{G}\right)  $ is a NE for all $\gamma
+,p_{1},p_{2}$ values.
+
+\section{The Undiscounted Basic Game}
+
+\subsection{Rules of the Game\noindent}
+
+The undiscounted game is played just like the discounted one, but the payoffs
+are different. We have a \emph{kill payoff} $a>0$ and a \emph{death cost}
+$-b<0$ and there is no discounting. The \emph{round payoff} $q_{n}\left(
+\mathbf{s}\right)  $ to $P_{n}$ is%
+\begin{align*}
+q_{1}\left(  00\right)   &  =a-b,\quad q_{1}\left(  01\right)  =-b,\quad
+q_{1}\left(  10\right)  =a,\quad q_{1}\left(  11\right)  =0,\\
+q_{2}\left(  00\right)   &  =a-b,\quad q_{2}\left(  01\right)  =a,\quad
+q_{2}\left(  10\right)  =-b,\quad q_{1}\left(  11\right)  =0.
+\end{align*}
+The \emph{total payoff} is%
+\[
+Q_{n}\left(  \mathbf{s}\left(  0\right)  \mathbf{s}\left(  1\right)
+\mathbf{s}\left(  2\right)  ...\right)  =\sum_{t=0}^{\infty}q_{n}\left(
+\mathbf{s}\left(  t\right)  \right)
+\]
+and the \emph{expected total payoff} is%
+\[
+\overline{Q}_{n}=\mathbb{E}\left(  Q_{n}\left(  \mathbf{s}\left(  0\right)
+\mathbf{s}\left(  1\right)  \mathbf{s}\left(  2\right)  ...\right)  \right)
+.
+\]
+
+
+\subsection{Payoff under Stationary Strategies}
+
+With the same notations as previously we have%
+\[
+V_{00}^{1}=a-b,\qquad V_{01}^{1}=-b,\qquad V_{10}^{1}=a.
+\]
+The payoff equation for $V_{11}^{1}$ is:%
+
+\begin{align*}
+V_{11}^{1}  &  =x_{1}p_{1}x_{2}p_{2}V_{00}^{1}+\left(  x_{1}\left(
+1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)  x_{2}p_{2}V_{01}^{1}%
++x_{1}p_{1}\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)
+\right)  V_{10}^{1}\\
+&  +\left(  x_{1}\left(  1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)
+\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)  \right)
+V_{11}^{1}%
+\end{align*}
+or%
+
+\begin{align*}
+V_{11}^{1}  &  =x_{1}p_{1}x_{2}p_{2}\left(  a-b\right)  -\left(  x_{1}\left(
+1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)  x_{2}p_{2}b+x_{1}%
+p_{1}\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)  \right)
+a\\
+&  +\left(  x_{1}\left(  1-p_{1}\right)  +\left(  1-x_{1}\right)  \right)
+\left(  x_{2}\left(  1-p_{2}\right)  +\left(  1-x_{2}\right)  \right)
+V_{11}^{1}%
+\end{align*}
+Solution is:
+\[
+V_{11}^{1}=\frac{x_{1}p_{1}a-x_{2}p_{2}b}{x_{1}p_{1}+x_{2}p_{2}-x_{1}%
+p_{1}x_{2}p_{2}}%
+\]
+Similarly, for $P_{2}$, we get
+\[
+V_{11}^{2}=\frac{x_{2}p_{2}a-x_{1}p_{1}b}{x_{1}p_{1}+x_{2}p_{2}-x_{1}%
+p_{1}x_{2}p_{2}}%
+\]
+
+
+\subsection{Stationary Equilibria}
+
+The stationary unique NE\ is $\left(  \widehat{x}_{1},\widehat{x}_{2}\right)
+=\left(  1,1\right)  $ because of the following. When $\max\left(  x_{1}%
+,x_{2}\right)  >1$:%
+
+\begin{align*}
+\frac{dV_{11}^{1}}{dx_{1}}  &  =D_{x_{1}}\left(  \frac{x_{2}p_{2}b-x_{1}%
+p_{1}a}{x_{1}p_{1}x_{2}p_{2}-x_{1}p_{1}-x_{2}p_{2}}\right) \\
+&  =\allowbreak-p_{1}x_{2}p_{2}\frac{-a+x_{2}p_{2}b-b}{\left(  x_{1}p_{1}%
+x_{2}p_{2}-x_{1}p_{1}-x_{2}p_{2}\right)  ^{2}}=\frac{p_{1}x_{2}p_{2}\left(
+a+b\left(  1-x_{2}p_{2}\right)  \right)  }{\left(  x_{1}p_{1}x_{2}p_{2}%
+-x_{1}p_{1}-x_{2}p_{2}\right)  ^{2}}>0
+\end{align*}
+%
+
+\begin{align*}
+\frac{dV_{11}^{2}}{dx_{1}}  &  =D_{x_{2}}\left(  -\frac{x_{2}p_{2}a-x_{1}%
+p_{1}b}{x_{1}p_{1}x_{2}p_{2}-x_{1}p_{1}-x_{2}p_{2}}\right) \\
+&  =\allowbreak-p_{2}x_{1}p_{1}\frac{-a+x_{1}p_{1}b-b}{\left(  x_{1}p_{1}%
+x_{2}p_{2}-x_{1}p_{1}-x_{2}p_{2}\right)  ^{2}}=\frac{p_{2}x_{1}p_{1}\left(
+a+b\left(  1-x_{1}p_{1}\right)  \right)  }{\left(  x_{1}p_{1}x_{2}p_{2}%
+-x_{1}p_{1}-x_{2}p_{2}\right)  ^{2}}>0
+\end{align*}
+So $P_{1}$ (resp. $P_{2}$)\ must take $x_{1}=1$ (resp. $x_{2}=1$). On the
+other hand, wWhen $x_{1}=x_{2}=0$ and $P_{1}$ deviates to $x_{1}^{\prime}>0$
+we get%
+\[
+V_{11}^{1}\left(  0,0\right)  -V_{11}^{1}\left(  x_{1},0\right)  =-a<0
+\]
+So $P_{1}$ (resp. $P_{2}$)\ has motive to deviate from $x_{1}=0$ (resp. from
+$x_{2}=0$).
+
+\subsection{Nonstationary Equilibria}
+
+Let $\sigma_{G}$ be the no-shoot strategy with grim retaliation. We will show
+that $\left(  \sigma_{G},\sigma_{G}\right)  $ is a NE. Suppose both players
+are using $\sigma_{G}$; then $P_{1}$ gets the payoff
+\[
+\widehat{V}_{11}^{1}=V_{11}^{1}\left(  0,0\right)  =0.
+\]
+Now $P_{1}$ considers deviating. If he shoots once at some round, then $P_{2}$
+will keep shooting back in all subsequent rounds and then $P_{1}$'s best
+strategy is to also keep shooting. He only needs to consider the deviating
+strategy in which he shoots at the first round, with probability one. This
+deviation yields:
+\begin{align*}
+\widetilde{V}_{11}^{1}  &  =p_{1}V_{11}^{1}\left(  1,0\right)  +\left(
+1-p_{1}\right)  V_{11}^{1}\left(  1,1\right) \\
+&  =\frac{-ap_{1}^{2}p_{2}+\left(  (a+b)p_{2}+a\right)  p_{1}-bp_{2}}%
+{(p_{2}-1)p_{1}-p_{2}}.
+\end{align*}
+Then we have%
+\[
+\widehat{V}_{11}^{1}-\widetilde{V}_{11}^{1}=\frac{-a\left(  p_{1}+p_{1}%
+p_{2}\left(  1-p_{2}\right)  \right)  +bp_{2}\left(  1-p_{1}\right)
+}{(1-p_{2})p_{1}+p_{2}}%
+\]
+and for a NE we must have
+\[
+bp_{2}\left(  1-p_{1}\right)  >a\left(  p_{1}+p_{1}p_{2}\left(  1-p_{2}%
+\right)  \right)
+\]
+and, from the similar condition for $P_{2}$,%
+\[
+bp_{1}\left(  1-p_{2}\right)  >a\left(  p_{2}+p_{1}p_{2}\left(  1-p_{1}%
+\right)  \right)
+\]
+Combining these we get that $\left(  \sigma_{G},\sigma_{G}\right)  $ is a
+NE\ if%
+\[
+\frac{b}{a}>\max\left\{  \frac{p_{1}+p_{1}p_{2}\left(  1-p_{2}\right)  }%
+{p_{2}\left(  1-p_{1}\right)  }\text{,}\frac{p_{2}+p_{1}p_{2}\left(
+1-p_{1}\right)  }{p_{1}\left(  1-p_{2}\right)  }\right\}  .
+\]
+
+
+\section{The Evolutionary Tournament}
+
+\subsection{Fitness Based Tournament}
+
+This tournament consists of $J$ generations, each of which involves $N$
+players and $M$ strategies. In each generation every player plays a duel
+against every other player; the duel can be either discounted or undiscounted.
+The idea is that each strategy is evaluated by its \emph{fitness}, i.e., its
+performance (summed over all players who use the strategy)\ against all
+players and the fitness determines the proportion of each strategy in the
+nextgeneration. The tournament is described by the following pseudocode.
+
+\begin{algorithm}[h!]
+\caption{Fitness Based Evolutionary Tournament}\label{LrngAlg01}
+\begin{algorithmic}[1]
+\State \textbf{Input}: kill prob. $p$, discount factor $\gamma$, no. of players $N$,
+strategy set $\mathcal{S}$, no. of generations $J$
+\For{$n\in \{1,2,...,N\}$}
+\State $P_n$ selects randomly $\sigma_n\in\mathcal{S}$
+\EndFor
+\For{$j\in \{1,2,...,J\}$}
+\For{$(n_1,n_2)\in \{1,...,N\}\times\{1,...,N\}$}
+\State $P_{n_1}$ and $P_{n_2}$ fight a duel
+\EndFor
+\For{$n\in \{1,...,N\}$}
+\State $A^j_n$ is $P_n$'s total payoff from all duels he fought
+\EndFor
+\For{$\sigma\in \mathcal{S}$}
+\State $B^j_\sigma=\sum_{n:P_n \text{ uses }\sigma}A^j_n$
+\EndFor
+\For{$\sigma\in \mathcal{S}$}
+\State $F^j_\sigma=\frac{B^j_\sigma}{\sum_{\sigma\in \mathcal{S}}B^j_\sigma}$ is the fitness of $\sigma$
+\EndFor
+\For{$(n_1,n_2)\in \{1,...,N\}\times\{1,...,N\}$}
+\State $P_n$ selects $\sigma\in\mathcal{S}$ with prob. $F^j_\sigma$
+\EndFor
+\EndFor
+\State \Return $\left(F^J_\sigma\right)_{\sigma\in \mathcal{S}}$
+\end{algorithmic}
+\end{algorithm}
+
+
+\bigskip
+
+\noindent It is also possible to modify the algorithm so that strategies
+propagate into the next generation acording to individual player performance.
+Initial experiments indicate that this tournament gives reasonable results
+when applied to the discounted game, but performs terribly when applied to the
+undiscounted one.
+
+\subsection{Imitation Based Tournament}
+
+This tournament also involves $N$ players, $M$ strategies and $J$ generations,
+and in each generation every player plays a duel against every other player;
+the duel can be either discounted or undiscounted (so far I\ have only tested
+this with the undiscounted game). The idea here is that, in every generation
+each player has a probability $\pi$ of switching his strategy to that of the
+best performing player. This is a simple evolutiomnary dynamic and it should
+be easy to establish its properties (and also for general tournaments, not
+just for duels). The tournament is described by the following pseudocode.
+
+\begin{algorithm}[h!]
+\caption{Imitation Based Evolutionary Tournament}\label{LrngAlg01}
+\begin{algorithmic}[1]
+\State \textbf{Input}: kill prob. $p$, kill gain $a$, death loss $b$, no. of players $N$,
+strategy set $\mathcal{S}$, mutation prob. $\pi$, no. of generations $J$
+\For{$n\in \{1,2,...,N\}$}
+\State $P_n$ selects randomly $\sigma_n\in\mathcal{S}$
+\EndFor
+\For{$j\in \{1,2,...,J\}$}
+\For{$(n_1,n_2)\in \{1,...,N\}\times\{1,...,N\}$}
+\State $P_{n_1}$ and $P_{n_2}$ fight a duel
+\EndFor
+\EndFor
+\For{$n\in \{1,...,N\}$}
+\State $A^j_n$ is $P_n$'s total payoff from all duels he fought
+\EndFor
+\State $\widehat{n}=\arg\max_n A^j_n$
+\For{$n\in \{1,2,...,N\}$}
+\State $P_n$ switches to $P_{\widehat{n}}$'s strategy w.p. $\pi$.
+\EndFor
+\State \Return The players' strategies
+\end{algorithmic}
+\end{algorithm}
+
+
+\bigskip
+
+\newpage
+
+\section{Additional Remarks}
+
+\begin{enumerate}
+\item We must perform more experiments.
+
+\begin{enumerate}
+\item Apply imitation based tournament to the undiscounted game.
+
+\item Use more strategies.
+
+\item Compare performance when using theoretical payoff formulas vs.
+simulation-obtained payoffs.
+
+\item Try playing \emph{only one match} (two players) per generation. Or, more
+generally, $K\leq N^{2}$ matches.
+
+\item Compare performance of player evaluation vs. strategy evaluation. Why
+don' these give identical results?
+\end{enumerate}
+
+\item Fitness functions:\ 
+
+\begin{enumerate}
+\item Fitness functions apprently cannot handle well \emph{negative scores}.
+Can we improve this?
+\end{enumerate}
+
+\item Extensions to tournaments on \emph{graphs}.
+
+\begin{enumerate}
+\item When the graph is a clique, each player chooses the best overall strategy.
+
+\item In graph, players should choose the best player / strategy in their neighborhood.
+
+\item For general graph, we could compute a local fitness function, using
+payoffs of each vertex neighborhood.
+\end{enumerate}
+
+\item Need to study more evolutionary game theory.
+
+\begin{enumerate}
+\item What are \ the properties of evolutionary stable equilibria?
+
+\item What are alternative evolutionary dynamics?
+\end{enumerate}
+
+\item \emph{Mathematical} extensions.
+
+\begin{enumerate}
+\item Model the change of strategy proportions across generations (ODE? MC?).
+
+\item In the fitness tournament we essentially have an update
+\begin{equation}
+z_{m,t+1}=\frac{F\left(  \sum_{k\neq m}z_{k,t}Q_{mk}\right)  }{\sum_{m=1}%
+^{M}F\left(  \sum_{k\neq m}z_{k,t}Q_{mk}\right)  } \label{eq001}%
+\end{equation}
+We need to study the \emph{convergence} of (\ref{eq001}). E.g., for
+$F:\mathbb{R}\rightarrow\mathbb{R}^{+}$, increacing function of $s$, is it a
+contraction? Look at fixed point theorems (Nash?), derivatives etc. If we
+cannot get theoretical results, maybe study numerically.
+
+\item Can we replace \texttt{randsample} with a deterministic operation? Then
+we will have a deterministioc system, perhaps easier to study.
+
+\item Further (and more general, not just for duel tournaments)\ of the
+imitation based dynamic.
+
+\begin{enumerate}
+\item This appears to be a very simple rule and it also looks like its
+analysis will not be too complicated.
+
+\item Also consider the case when at most $K\in\left\{  1,...,N\right\}  $
+changes can take place per generation (or iteration).
+
+\item Note:\ in this case, instead of evolutionary tournament and generations,
+we can think of a \textquotedblleft process\textquotedblright\ and its iterations.
+
+\item Variation:\ the imitation protocol imitates the strategy of a randomly
+chosen player (neighbor)\ with probability $\pi$ which depends on the extended
+fitness values of involved partners:%
+\[
+\]
+
+\end{enumerate}
+
+\item Lainiotis strategy propagation:%
+\[
+z_{m,t+1}=\frac{z_{m,t}F\left(  \sum_{k\neq m}z_{k,t}Q_{mk}\right)  }%
+{\sum_{m=1}^{M}z_{m,t}F\left(  \sum_{k\neq m}z_{k,t}Q_{mk}\right)  }%
+\]
+
+\end{enumerate}
+
+\item \textbf{More generally}: what can evolutionary tournament (or
+evolutionary Game Theory) tell us about NE\ selection?
+\end{enumerate}
+
+asas
+
+
+\end{document}
